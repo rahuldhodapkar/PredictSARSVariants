@@ -33,14 +33,22 @@ protgpt2 = tfs.pipeline('text-generation', model="nferruz/ProtGPT2")
 ## (1) Generate Predicted Sequences
 ################################################################################
 
+prompt = """MFVFLVLLPLVSSQCVNLITRTQSYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFFSNVT
+WFHAISETNGTKRFDNPVLPFNDGVYFASTEKSNIIRGWIFGTTLDSKTQSLLIVNNATN
+VVIKVCEFQFCNDPFLDVYYHKNNKSWMESEFRVYSSANNCTFEYVSQPFLMDLEGKQGN
+FKNLREFVFKNIDGYFKIYSKHTPINLGRDLPQGFSALEPLVDLPIGINITRFQTLLALH
+RSYLTPGDSSSGWTAGAAAYYVGYLQPRTFLLKYNENGTITDAVDCALDPLSETKCTLKS
+FTVEKGIYQTSNF"""
+
 start = time.time()
-sequences = protgpt2("MGLTT",
-    max_length=100, do_sample=True,
+sequences = protgpt2(prompt,
+    max_length=1000, do_sample=True,
     top_k=950, repetition_penalty=1.2,
-    num_return_sequences=50, eos_token_id=0)
+    num_return_sequences=10, eos_token_id=0)
 end = time.time()
 print(end - start)
 
+sequences[0]
 
 ################################################################################
 ## (2) Cluster Predicted Sequences

@@ -34,3 +34,9 @@ Then:
 
     conda activate covid_pred
     pip install -r requirements.txt
+
+If you are running on the yale Farnam HPC, you will need to additionally run:
+
+    conda install pytorch==1.11.0 torchvision==0.12.0 torchaudio==0.11.0 cudatoolkit=11.3 -c pytorch
+
+
