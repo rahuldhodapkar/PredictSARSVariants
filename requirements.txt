@@ -1,0 +1,14 @@
+numpy
+pandas
+scanpy
+torch
+torchvision
+torchtext
+transformers
+datasets
+evaluate
+tqdm
+plotnine
+argparse
+jellyfish
+umap-learn
