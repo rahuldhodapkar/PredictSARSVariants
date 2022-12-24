@@ -18,8 +18,8 @@ os.makedirs('./calc', exist_ok=True)
 ################################################################################
 
 sets = [
-    ('./data/sars_spike_train.fasta', './calc/train.txt', 1000),
-    ('./data/sars_spike_test.fasta', './calc/test.txt', 100)
+    ('./data/sars_spike_train.fasta', './calc/train.txt', 10000),
+    ('./data/sars_spike_test.fasta', './calc/test.txt', 1000)
 ]
 
 for in_fn, out_fn, n in sets:

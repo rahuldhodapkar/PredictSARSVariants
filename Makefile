@@ -13,6 +13,7 @@ finetune:
 					  --train_file ./calc/train.txt \
 					  --validation_file ./calc/test.txt \
 					  --tokenizer_name nferruz/ProtGPT2 \
+					  --block_size 256 \
 					  --do_train \
 					  --do_eval \
 					  --output_dir model_out \
