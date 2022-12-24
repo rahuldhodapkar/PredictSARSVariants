@@ -6,6 +6,9 @@
 
 import os
 from tqdm import tqdm
+import random
+
+random.seed(42)
 
 ################################################################################
 ## Build Output Scaffolding
@@ -23,16 +26,24 @@ sets = [
 ]
 
 for in_fn, out_fn, n in sets:
-    n_proc = 0
+    # first count and index the entries in the file
+    n_entries = 0
+    with open(in_fn) as infile:
+        for line in tqdm(infile):
+            if line.startswith('>'):
+                n_entries += 1
+
+    # then randomly select the number of entries to print
+    valid_ixs = set(random.sample(range(n_entries), n))
+
+    n_proc = -1                 # required for zero-indexing of valid_ixs
     with open(out_fn, 'w') as outfile:
         with open(in_fn) as infile:
             for line in tqdm(infile):
                 if line.startswith('>'):
                     n_proc += 1
                     line = '<|endoftext|>\n'
-                if n_proc > n:
-                    break
-                print(line, end='', file=outfile)
-
+                if n_proc in valid_ixs:
+                    print(line, end='', file=outfile)
 
 print('All done!')
