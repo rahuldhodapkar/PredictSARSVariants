@@ -17,23 +17,21 @@ os.makedirs('./calc', exist_ok=True)
 ## Load Data
 ################################################################################
 
-# transfer text file and process
-with open('./calc/sars_spike_test.fasta', 'w') as outfile:
-    with open('./data/sars_spike_test.fasta') as infile:
-        for line in tqdm(infile):
-            if line.startswith('>'):
-                print('<|endoftext|>', file=outfile)
-            else:
-                print(line, end='', file=outfile)
+sets = [
+    ('./data/sars_spike_train.fasta', './calc/train.txt', 1000),
+    ('./data/sars_spike_test.fasta', './calc/test.txt', 100)
+]
 
-
-# transfer text file and process
-with open('./calc/sars_spike_train.fasta', 'w') as outfile:
-    with open('./data/sars_spike_train.fasta') as infile:
-        for line in tqdm(infile):
-            if line.startswith('>'):
-                print('<|endoftext|>', file=outfile)
-            else:
+for in_fn, out_fn, n in sets:
+    n_proc = 0
+    with open(out_fn, 'w') as outfile:
+        with open(in_fn) as infile:
+            for line in tqdm(infile):
+                if line.startswith('>'):
+                    n_proc += 1
+                    line = '<|endoftext|>\n'
+                if n_proc > n:
+                    break
                 print(line, end='', file=outfile)
 
 
