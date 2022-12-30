@@ -382,6 +382,14 @@ def main():
             revision=model_args.model_revision,
             use_auth_token=True if model_args.use_auth_token else None,
         )
+        ##
+        # *** Freeze layers for ProtoGPT2 training (all but the last GPT2 block)
+        ##
+        if model_args.model_name_or_path == 'nferruz/ProtGPT2':
+            for i in range(len(model.transformer.h) - 1):
+                for param in model.transformer.h[i].parameters():
+                    param.requires_grad = False
+
     else:
         model = AutoModelForCausalLM.from_config(config)
         n_params = sum(dict((p.data_ptr(), p.numel()) for p in model.parameters()).values())
