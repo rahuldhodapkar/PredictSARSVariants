@@ -17,9 +17,9 @@ finetune:
 					  --do_train \
 					  --do_eval \
 					  --output_dir model_out \
-					  --learning_rate 1e-06
+					  --learning_rate 1e-05
 
 
 run:
-	python ./src/generate_rbd_predictions.py
+	python ./src/run_finetuned_model.py ./model_out_20k
 

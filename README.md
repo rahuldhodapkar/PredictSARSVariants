@@ -13,6 +13,10 @@ accessible at
 
     https://www.ncbi.nlm.nih.gov/labs/virus/vssi/
 
+Note that the reference sequence for the surface glycoprotein can be found at:
+
+    https://www.ncbi.nlm.nih.gov/protein/1791269090
+
 ## Evaluation
 Distance between predicted sequences and true variant spike proteins were
 computed by using the string edit distance between the amino acid sequences,
