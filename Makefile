@@ -21,5 +21,5 @@ finetune:
 
 
 run:
-	python ./src/run_finetuned_model.py ./model_out_20k
+	python ./src/run_finetuned_model.py ./model_out
 
