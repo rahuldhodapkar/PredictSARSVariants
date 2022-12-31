@@ -8,6 +8,7 @@ import os
 import sys
 from functools import reduce
 from Bio import Align
+import numpy as np
 
 ################################################################################
 ## Build Output Scaffolding
@@ -67,6 +68,7 @@ with open('./data/sars_spike_train.fasta') as f:
                 alignments = aligner.align(
                     refseq[REFSEQ_START:REFSEQ_STOP], s[REFSEQ_START:REFSEQ_STOP])
             except ValueError:
+                s = ''
                 continue
             if (len(alignments) == 1) and alignments[0].path == LINEAR_PATH:
                 all_substitutions_train.update(
@@ -89,6 +91,7 @@ with open('./data/sars_spike_test.fasta') as f:
                 alignments = aligner.align(
                     refseq[REFSEQ_START:REFSEQ_STOP], s[REFSEQ_START:REFSEQ_STOP])
             except ValueError:
+                s = ''
                 continue
             if (len(alignments) == 1) and alignments[0].path == LINEAR_PATH:
                 all_substitutions_test.update(
@@ -107,10 +110,9 @@ print('===== Variants in the Predicted Set =====')
 print(all_substitutions)
 
 print('===== Variants in the Test Set that were predicted =====')
-
-all_substitutions_test.difference(all_substitutions_train)
-list(map(lambda x: x in all_substitutions,
-    all_substitutions_test.difference(all_substitutions_train)))
+new_subs = list(all_substitutions_test.difference(all_substitutions_train))
+predicted = list(map(lambda x: x in all_substitutions, new_subs))
+np.array(new_subs)[predicted]
 
 print('===== Novel Variants Predicted =====')
 
