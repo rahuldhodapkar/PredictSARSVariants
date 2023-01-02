@@ -3,18 +3,22 @@
 # Load generated sequences and call amino acid changes from reference
 #
 
-import transformers as tfs
 import os
 import sys
 from functools import reduce
 from Bio import Align
 import numpy as np
+import pandas as pd
+import plotnine as pn
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 ################################################################################
 ## Build Output Scaffolding
 ################################################################################
 
 os.makedirs('./calc', exist_ok=True)
+os.makedirs('./fig', exist_ok=True)
 
 ################################################################################
 ## Load Reference Sequence
@@ -115,7 +119,7 @@ predicted = list(map(lambda x: x in all_substitutions, new_subs))
 np.array(new_subs)[predicted]
 
 print('===== All Variants in the Test or Train Set that were predicted =====')
-new_subs = list(all_substitutions_test.difference(all_substitutions_train))
+new_subs = list(all_substitutions_test.union(all_substitutions_train))
 predicted = list(map(lambda x: x in all_substitutions, new_subs))
 np.array(new_subs)[predicted]
 
@@ -126,3 +130,56 @@ all_substitutions.difference(
 ).difference(
     all_substitutions_train
 )
+
+################################################################################
+## Generate Plots
+################################################################################
+
+####
+# Variant location along primary amino acid sequence density plot
+####
+
+subs_dict = {
+    'train': all_substitutions_train,
+    'test': all_substitutions_test,
+    'only_test': all_substitutions_test.difference(all_substitutions_train),
+    'only_train': all_substitutions_train.difference(all_substitutions_test),
+    'predict': all_substitutions
+}
+
+df_dicts = []
+for k,v in subs_dict.items():
+    df_dicts += [{'group':k, 'value':int(x[1:-1])} for x in v]
+
+plot_df = pd.DataFrame(df_dicts)
+
+sns.displot(data=plot_df,
+            x='value',
+            hue='group',
+            kind='kde',
+            palette=sns.color_palette('colorblind'),
+            bw_adjust=0.2)
+
+
+####
+# Variant Pie Chart
+####
+
+substitutions_df = pd.DataFrame({
+    'type': 
+        ['IN_TEST_ONLY'] * len(all_substitutions.intersection(
+                            all_substitutions_test.difference(
+                            all_substitutions_train))) +
+        ['IN_TRAIN_ONLY'] * len(all_substitutions.intersection(
+                            all_substitutions_train.difference(
+                            all_substitutions_test))) +
+        ['IN_TRAIN_AND_TEST'] * len(all_substitutions.intersection(
+                            all_substitutions_train.intersection(
+                            all_substitutions_test))) +
+        ['NOVEL'] * len(all_substitutions.difference(
+                            all_substitutions_train.union(
+                            all_substitutions_test)))
+})
+data = substitutions_df.groupby("type")['type'].count()
+data.plot.pie(autopct="%.1f%%", explode=[0.05]*4,
+             colors=sns.color_palette('colorblind'))

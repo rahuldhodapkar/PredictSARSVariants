@@ -13,3 +13,4 @@ argparse
 jellyfish
 umap-learn
 biopython
+seaborn
