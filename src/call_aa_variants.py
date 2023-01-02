@@ -13,6 +13,8 @@ import plotnine as pn
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+import re
+
 ################################################################################
 ## Build Output Scaffolding
 ################################################################################
@@ -242,4 +244,40 @@ sns.boxplot(data=plot_df,
             showfliers=False)
 
 
+################################################################################
+## Save Substitutions to MutaBind2 Input Format
+################################################################################
+
+VALID_SUB = '^[ARNDCQEGHILKMFPSTWYV0-9]*$'
+
+valid_subs = list(filter(lambda x: re.match(VALID_SUB, x), all_substitutions))
+
+#
+# Tab-delimited:
+#
+#       Chain | Residue | Mutant
+#
+# Chain is always "B" (contact surface glycoprotein to ACE2 on PDB structure 7DF4)
+#
+with open('./calc/mutabind2_predicted_substitutions.txt', 'w') as f:
+    for s in valid_subs:
+        print('{}\t{}\t{}'.format('B', s[:-1], s[-1:]), file=f)
+
+#
+# Tab-delimited:
+#
+#       Chain | Residue | Mutant
+#
+# Chain is always "A" (contact surface glycoprotein to ACE2 on PDB structure 8D8Q)
+#
+# Chain A : Spike Glycoprotein
+# Chain B : 2196 Light Chain
+# Chain C : 2196 Heavy Chain
+# Chain H : 2130 Heavy Chain
+# Chain L : 2130 Light Chain
+#
+#
+with open('./calc/mutabind2_evushield.txt', 'w') as f:
+    for s in valid_subs:
+        print('{}\t{}\t{}'.format('A', s[:-1], s[-1:]), file=f)
 

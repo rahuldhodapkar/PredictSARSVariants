@@ -27,6 +27,20 @@ UniRef50 (version 2021_04) dataset, it cannot have contained sequencing
 data that was generated after that date.  Evaluations will be conducted using
 SARS-CoV2 sequences generated on or after May 2021.
 
+### MutaBind2
+To evaluate the effect of single-nucleotide amino acid substitution on viral
+fitness, and to stratify variants of interest for further study, the
+MutaBind2 tool was employed (https://lilab.jysw.suda.edu.cn/research/mutabind2/)
+
+Note the following relevant PDB codes:
+
+    7DF4 (Spike-ACE2 complex Cryo-EM solved structure)
+
+Binding of RBD to therapeutic antibodies:
+
+     8D8Q (Tixagevimab + cilgavimab (Evushield) used for COVID PrEP)
+
+
 ## Orchestration
 Code to run these experiments is organized using a simple `Makefile`.
 All software is designed to be run within a `conda` environment, requirements
