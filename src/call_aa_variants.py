@@ -51,7 +51,7 @@ def check_alignment_substitutions(x):
 
 all_substitutions = set()
 
-with open('./calc/generated_rbd.txt') as f:
+with open('./calc/generated_rbd_small.txt') as f:
     for line in f:
         s = line.rstrip()
         alignments = aligner.align(refseq[REFSEQ_START:REFSEQ_STOP], s)
@@ -142,8 +142,8 @@ all_substitutions.difference(
 subs_dict = {
     'train': all_substitutions_train,
     'test': all_substitutions_test,
-    'only_test': all_substitutions_test.difference(all_substitutions_train),
-    'only_train': all_substitutions_train.difference(all_substitutions_test),
+#    'only_test': all_substitutions_test.difference(all_substitutions_train),
+#    'only_train': all_substitutions_train.difference(all_substitutions_test),
     'predict': all_substitutions
 }
 
@@ -157,6 +157,8 @@ sns.displot(data=plot_df,
             x='value',
             hue='group',
             kind='kde',
+            common_norm=False,
+            fill=True,
             palette=sns.color_palette('colorblind'),
             bw_adjust=0.2)
 
@@ -164,6 +166,31 @@ sns.displot(data=plot_df,
 ####
 # Variant Pie Chart
 ####
+
+
+substitutions_df = pd.DataFrame({
+    'type': 
+        ['PREDICTED'] * len(all_substitutions_test.intersection(
+                            all_substitutions)) +
+        ['NOT_PREDICTED'] * len(all_substitutions_test.difference(
+                            all_substitutions))
+})
+data = substitutions_df.groupby("type")['type'].count()
+data.plot.pie(autopct="%.1f%%", explode=[0.05]*2, colors=sns.color_palette('colorblind'))
+
+
+
+substitutions_df = pd.DataFrame({
+    'type': 
+        ['PREDICTED'] * len(all_substitutions_train.intersection(
+                            all_substitutions)) +
+        ['NOT_PREDICTED'] * len(all_substitutions_train.difference(
+                            all_substitutions))
+})
+data = substitutions_df.groupby("type")['type'].count()
+data.plot.pie(autopct="%.1f%%", explode=[0.05]*2, colors=sns.color_palette('colorblind'))
+
+
 
 substitutions_df = pd.DataFrame({
     'type': 
@@ -183,3 +210,36 @@ substitutions_df = pd.DataFrame({
 data = substitutions_df.groupby("type")['type'].count()
 data.plot.pie(autopct="%.1f%%", explode=[0.05]*4,
              colors=sns.color_palette('colorblind'))
+
+################################################################################
+## Generate BLOSUM plots
+################################################################################
+
+blosum = Align.substitution_matrices.load("BLOSUM80")
+
+samples = [np.random.choice(
+    np.array(range(len(blosum62.alphabet)), dtype=int), 2, replace=False)
+    for x in range(len(all_substitutions))]
+
+
+subs_dict = {
+    'train': all_substitutions_train,
+    'test': all_substitutions_test,
+    'predict': all_substitutions,
+    'random': [''.join(map(lambda x: blosum.alphabet[x], x)) for x in samples]
+}
+
+df_dicts = []
+for k,v in subs_dict.items():
+    df_dicts += [{'group':k, 'value':blosum[x[0],x[-1]]} for x in v]
+
+plot_df = pd.DataFrame(df_dicts)
+
+sns.boxplot(data=plot_df,
+            x='group',
+            y='value',
+            palette=sns.color_palette('colorblind'),
+            showfliers=False)
+
+
+
