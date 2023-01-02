@@ -109,13 +109,17 @@ print(all_substitutions_test)
 print('===== Variants in the Predicted Set =====')
 print(all_substitutions)
 
-print('===== Variants in the Test Set that were predicted =====')
+print('===== New Variants in the Test Set that were predicted =====')
+new_subs = list(all_substitutions_test.difference(all_substitutions_train))
+predicted = list(map(lambda x: x in all_substitutions, new_subs))
+np.array(new_subs)[predicted]
+
+print('===== All Variants in the Test or Train Set that were predicted =====')
 new_subs = list(all_substitutions_test.difference(all_substitutions_train))
 predicted = list(map(lambda x: x in all_substitutions, new_subs))
 np.array(new_subs)[predicted]
 
 print('===== Novel Variants Predicted =====')
-
 # novel variants predicted by the algorithm
 all_substitutions.difference(
     all_substitutions_test
