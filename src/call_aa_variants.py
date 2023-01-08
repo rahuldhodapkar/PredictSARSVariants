@@ -12,7 +12,6 @@ import pandas as pd
 import plotnine as pn
 import seaborn as sns
 import matplotlib.pyplot as plt
-
 import re
 
 ################################################################################
@@ -220,7 +219,7 @@ data.plot.pie(autopct="%.1f%%", explode=[0.05]*4,
 blosum = Align.substitution_matrices.load("BLOSUM80")
 
 samples = [np.random.choice(
-    np.array(range(len(blosum62.alphabet)), dtype=int), 2, replace=False)
+    np.array(range(len(blosum.alphabet)), dtype=int), 2, replace=False)
     for x in range(len(all_substitutions))]
 
 
@@ -252,6 +251,11 @@ VALID_SUB = '^[ARNDCQEGHILKMFPSTWYV0-9]*$'
 
 valid_subs = list(filter(lambda x: re.match(VALID_SUB, x), all_substitutions))
 
+
+###############
+# MutaBind2
+###############
+
 #
 # Tab-delimited:
 #
@@ -259,12 +263,39 @@ valid_subs = list(filter(lambda x: re.match(VALID_SUB, x), all_substitutions))
 #
 # Chain is always "B" (contact surface glycoprotein to ACE2 on PDB structure 7DF4)
 #
-with open('./calc/mutabind2_predicted_substitutions.txt', 'w') as f:
+with open('./calc/mutabind2_7df4.txt', 'w') as f:
     for s in valid_subs:
         print('{}\t{}\t{}'.format('B', s[:-1], s[-1:]), file=f)
 
 #
 # Tab-delimited:
+#
+#       Chain | Residue | Mutant
+#
+# Chain is always "A" (contact surface glycoprotein to ACE2 on PDB structure 8D8Q)
+#
+with open('./calc/mutabind2_8d8q.txt', 'w') as f:
+    for s in valid_subs:
+        print('{}\t{}\t{}'.format('A', s[:-1], s[-1:]), file=f)
+
+
+###############
+# SAAMBE-3D
+###############
+
+#
+# Space-delimited:
+#
+#       Chain | Residue | Mutant
+#
+# Chain is always "B" (contact surface glycoprotein to ACE2 on PDB structure 7DF4)
+#
+with open('./calc/saambe3d_6moj.txt', 'w') as f:
+    for s in valid_subs:
+        print('{} {} {} {}'.format('E', str(int(s[1:-1])), s[0], s[-1:]), file=f)
+
+#
+# Space-delimited:
 #
 #       Chain | Residue | Mutant
 #
@@ -277,7 +308,9 @@ with open('./calc/mutabind2_predicted_substitutions.txt', 'w') as f:
 # Chain L : 2130 Light Chain
 #
 #
-with open('./calc/mutabind2_evushield.txt', 'w') as f:
+with open('./calc/saambe3d_8d8q.txt', 'w') as f:
     for s in valid_subs:
-        print('{}\t{}\t{}'.format('A', s[:-1], s[-1:]), file=f)
+        print('{} {} {} {}'.format('A', s[1:-1], s[0], s[-1:]), file=f)
 
+
+print('All done!')

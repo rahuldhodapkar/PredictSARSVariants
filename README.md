@@ -28,9 +28,8 @@ data that was generated after that date.  Evaluations will be conducted using
 SARS-CoV2 sequences generated on or after May 2021.
 
 ### MutaBind2
-To evaluate the effect of single-nucleotide amino acid substitution on viral
-fitness, and to stratify variants of interest for further study, the
-MutaBind2 tool was employed (https://lilab.jysw.suda.edu.cn/research/mutabind2/)
+The MutaBind2 tool was used to evaluate the effect of single-residue amino
+acid substitutions on viral fitness. (https://lilab.jysw.suda.edu.cn/research/mutabind2/)
 
 Note the following relevant PDB codes:
 
@@ -38,7 +37,40 @@ Note the following relevant PDB codes:
 
 Binding of RBD to therapeutic antibodies:
 
-     8D8Q (Tixagevimab + cilgavimab (Evushield) used for COVID PrEP)
+    8D8Q (Tixagevimab + cilgavimab (Evushield) used for COVID PrEP)
+
+Some manual entry of chain identities were required to define
+which particular amino acid chains should be included in the binding
+affinity simulations.
+
+### SAAMBE-3D
+The SAAMBE-3D tool was also set up to evaluate fitness changes after amino
+acid point substitution, **however this implementation is unstable and should
+not be used.** (http://compbio.clemson.edu/saambe_webserver/)
+
+A standalone `python2` implementation was provided by the SAAMBE authors
+and was used for rapid evaluation of the effect of point substitutions
+on binding affinities/free energy.
+
+After copying the appropriate files into the unzipped `standaloneCode`
+folder, the following invocations can be used to call SAAMBE-3D as of Jan 2023.
+For the most up-to-date documentation regarding the tool, please contact
+the original authors.
+
+Several notes on the installation requirements: (1) The SAAMBE tool requires
+a deprecated version of python, which is not being actively maintained.  This
+puts the tool's installation at risk (worth keeping in mind when setting up).
+(2) For my setup using anaconda with `python 2.7.18`, `conda-forge` installation
+of the `xgboost` dependency was required to prevent segmentation fault on
+running the tool.  Further, conda was unable to appropriately set up the
+path search with the correct `CONDA_PREFIX`, so this needed to be done manually.
+
+After these additional setup steps, SAAMBE was able to predict changes to the
+binding affinities of the relevant complexes with the following commands:
+
+    export PATH=$CONDA_PREFIX/bin:$PATH
+    python Mutation_pred.py -i 7df4.pdb -f saambe3d_predicted_substitutions.txt -d 1 >saambe3d_predicted_output.txt
+    python Mutation_pred.py -i 8d8q.pdb -f saambe3d_evushield.txt -d 1 >saambe3d_evushield_output.txt
 
 
 ## Orchestration
