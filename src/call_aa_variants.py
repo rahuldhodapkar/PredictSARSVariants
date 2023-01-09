@@ -242,6 +242,29 @@ sns.boxplot(data=plot_df,
             palette=sns.color_palette('colorblind'),
             showfliers=False)
 
+#############
+# Save variant calls to output
+#############
+
+all_sub_ids = list(all_substitutions.union(
+    all_substitutions_test.union(
+        all_substitutions_train
+    )
+))
+
+variant_meta_df = pd.DataFrame({
+    'Mutation': all_sub_ids,
+    'in_train': [x in all_substitutions_train for x in all_sub_ids],
+    'in_test': [x in all_substitutions_test for x in all_sub_ids],
+    'in_predict': [x in all_substitutions for x in all_sub_ids]
+})
+variant_meta_df['prediction_identity'] = [
+    str(variant_meta_df['in_test'][i]) + '|' +
+    str(variant_meta_df['in_train'][i]) + '|' +
+    str(variant_meta_df['in_predict'][i])
+    for i in range(variant_meta_df.shape[0])
+]
+variant_meta_df.to_csv('./calc/variant_meta_df.csv', index=False)
 
 ################################################################################
 ## Save Substitutions to MutaBind2 Input Format
