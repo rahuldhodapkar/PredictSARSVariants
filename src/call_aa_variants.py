@@ -154,7 +154,7 @@ for k,v in subs_dict.items():
 
 plot_df = pd.DataFrame(df_dicts)
 
-sns.displot(data=plot_df,
+sns.displot(data=plot_df.loc[plot_df['value'] >= REFSEQ_START + 10,:],
             x='value',
             hue='group',
             kind='kde',
@@ -162,7 +162,8 @@ sns.displot(data=plot_df,
             fill=True,
             palette=sns.color_palette('colorblind'),
             bw_adjust=0.2)
-
+plt.savefig('./fig/substitution_distribution_density_plot.png')
+plt.clf()
 
 ####
 # Variant Pie Chart
@@ -178,7 +179,8 @@ substitutions_df = pd.DataFrame({
 })
 data = substitutions_df.groupby("type")['type'].count()
 data.plot.pie(autopct="%.1f%%", explode=[0.05]*2, colors=sns.color_palette('colorblind'))
-
+plt.savefig('./fig/test_substitutions_pie_chart.png')
+plt.clf()
 
 
 substitutions_df = pd.DataFrame({
@@ -190,7 +192,8 @@ substitutions_df = pd.DataFrame({
 })
 data = substitutions_df.groupby("type")['type'].count()
 data.plot.pie(autopct="%.1f%%", explode=[0.05]*2, colors=sns.color_palette('colorblind'))
-
+plt.savefig('./fig/train_substitutions_pie_chart.png')
+plt.clf()
 
 
 substitutions_df = pd.DataFrame({
@@ -211,6 +214,8 @@ substitutions_df = pd.DataFrame({
 data = substitutions_df.groupby("type")['type'].count()
 data.plot.pie(autopct="%.1f%%", explode=[0.05]*4,
              colors=sns.color_palette('colorblind'))
+plt.savefig('./fig/predicted_substitutions_pie_chart.png')
+plt.clf()
 
 ################################################################################
 ## Generate BLOSUM plots
@@ -241,6 +246,36 @@ sns.boxplot(data=plot_df,
             y='value',
             palette=sns.color_palette('colorblind'),
             showfliers=False)
+plt.savefig('./fig/blosum80_boxplot.png')
+plt.clf()
+
+blosum = Align.substitution_matrices.load("PAM30")
+
+samples = [np.random.choice(
+    np.array(range(len(blosum.alphabet)), dtype=int), 2, replace=False)
+    for x in range(len(all_substitutions))]
+
+
+subs_dict = {
+    'train': all_substitutions_train,
+    'test': all_substitutions_test,
+    'predict': all_substitutions,
+    'random': [''.join(map(lambda x: blosum.alphabet[x], x)) for x in samples]
+}
+
+df_dicts = []
+for k,v in subs_dict.items():
+    df_dicts += [{'group':k, 'value':blosum[x[0],x[-1]]} for x in v]
+
+plot_df = pd.DataFrame(df_dicts)
+
+sns.boxplot(data=plot_df,
+            x='group',
+            y='value',
+            palette=sns.color_palette('colorblind'),
+            showfliers=False)
+plt.savefig('./fig/pam30_boxplot.png')
+plt.clf()
 
 #############
 # Save variant calls to output
