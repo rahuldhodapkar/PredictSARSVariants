@@ -14,6 +14,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import re
 
+from collections import defaultdict
+
 ################################################################################
 ## Build Output Scaffolding
 ################################################################################
@@ -50,20 +52,22 @@ def check_alignment_substitutions(x):
     return list(subs)
 
 
-all_substitutions = set()
+all_substitutions_predict_dict = defaultdict(int)
 
 with open('./calc/generated_rbd_small.txt') as f:
     for line in f:
         s = line.rstrip()
         alignments = aligner.align(refseq[REFSEQ_START:REFSEQ_STOP], s)
         if (len(alignments) == 1) and alignments[0].path == LINEAR_PATH:
-            all_substitutions.update(
-                check_alignment_substitutions(alignments[0]))
+            for k in check_alignment_substitutions(alignments[0]):
+                all_substitutions_predict_dict[k] += 1
 
+
+all_substitutions = set(all_substitutions_predict_dict.keys())
 
 # check all alignments from training set
 
-all_substitutions_train = set()
+all_substitutions_train_dict = defaultdict(int)
 
 with open('./data/sars_spike_train.fasta') as f:
     s = ''
@@ -76,17 +80,18 @@ with open('./data/sars_spike_train.fasta') as f:
                 s = ''
                 continue
             if (len(alignments) == 1) and alignments[0].path == LINEAR_PATH:
-                all_substitutions_train.update(
-                    check_alignment_substitutions(alignments[0]))
+                for k in check_alignment_substitutions(alignments[0]):
+                    all_substitutions_train_dict[k] += 1
             s = ''
             continue
         s = s + line.rstrip()
 
 
+all_substitutions_train = set(all_substitutions_train_dict.keys())
 
 # check all alignments from test set
 
-all_substitutions_test = set()
+all_substitutions_test_dict = defaultdict(int)
 
 with open('./data/sars_spike_test.fasta') as f:
     s = ''
@@ -99,13 +104,14 @@ with open('./data/sars_spike_test.fasta') as f:
                 s = ''
                 continue
             if (len(alignments) == 1) and alignments[0].path == LINEAR_PATH:
-                all_substitutions_test.update(
-                    check_alignment_substitutions(alignments[0]))
+                for k in check_alignment_substitutions(alignments[0]):
+                    all_substitutions_test_dict[k] += 1
             s = ''
             continue
         s = s + line.rstrip()
 
 
+all_substitutions_test = set(all_substitutions_test_dict.keys())
 
 print('===== Variants in the Training Set =====')
 print(all_substitutions_train)
@@ -133,6 +139,20 @@ all_substitutions.difference(
 ).difference(
     all_substitutions_train
 )
+
+all_items = (list(all_substitutions_predict_dict.items())
+        + list(all_substitutions_train_dict.items())
+        + list(all_substitutions_test_dict.items()))
+
+all_substitution_freqs_df = pd.DataFrame({
+    'substitution': [x[0] for x in all_items],
+    'frequency': [x[1] for x in all_items],
+    'group': ['Predict'] * len(all_substitutions_predict_dict)
+             + ['Train'] * len(all_substitutions_train_dict)
+             + ['Test'] * len(all_substitutions_test_dict)
+})
+
+all_substitution_freqs_df.to_csv('./calc/merged_substitution_info.csv', index=False)
 
 ################################################################################
 ## Generate Plots
