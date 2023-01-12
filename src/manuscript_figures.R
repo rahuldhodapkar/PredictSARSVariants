@@ -112,13 +112,17 @@ plot.df$group <- factor(plot.df$group,
                         levels=c('Random', 'Train', 'Test', 'Predict'),
                         ordered=T)
 
+
+#
+# Make Plots
+#
+
 ggplot(plot.df, aes(fill=group, x=group, y=blosum80)) + 
   geom_boxplot() +
   scale_fill_manual(values=c('#dddddd', '#648fff', '#785ef0', '#dc267f')) +
   theme_cowplot()
 ggsave('./fig/blosum80_boxplot.png', width=5, height=4)
 
-# statistics
 wilcox.test(blosum80 ~ group, data=subset(plot.df, group %in% c('Predict', 'Random')))
 wilcox.test(blosum80 ~ group, data=subset(plot.df, group %in% c('Train', 'Random')))
 wilcox.test(blosum80 ~ group, data=subset(plot.df, group %in% c('Test', 'Random')))
