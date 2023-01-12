@@ -105,6 +105,8 @@ with open('./data/sars_spike_test.fasta') as f:
             continue
         s = s + line.rstrip()
 
+
+
 print('===== Variants in the Training Set =====')
 print(all_substitutions_train)
 
@@ -221,7 +223,7 @@ plt.clf()
 ## Generate BLOSUM plots
 ################################################################################
 
-blosum = Align.substitution_matrices.load("BLOSUM80")
+blosum = Align.substitution_matrices.load('BLOSUM80')
 
 samples = [np.random.choice(
     np.array(range(len(blosum.alphabet)), dtype=int), 2, replace=False)
@@ -249,7 +251,7 @@ sns.boxplot(data=plot_df,
 plt.savefig('./fig/blosum80_boxplot.png')
 plt.clf()
 
-blosum = Align.substitution_matrices.load("PAM30")
+blosum = Align.substitution_matrices.load('PAM30')
 
 samples = [np.random.choice(
     np.array(range(len(blosum.alphabet)), dtype=int), 2, replace=False)
@@ -299,6 +301,15 @@ variant_meta_df['prediction_identity'] = [
     str(variant_meta_df['in_predict'][i])
     for i in range(variant_meta_df.shape[0])
 ]
+
+
+variant_meta_df['BLOSUM80'] = [Align.substitution_matrices.load('BLOSUM80')[x[0],x[-1]] 
+    for x in variant_meta_df['Mutation']]
+
+variant_meta_df['PAM30'] = [Align.substitution_matrices.load('PAM30')[x[0],x[-1]] 
+    for x in variant_meta_df['Mutation']]
+
+
 variant_meta_df.to_csv('./calc/variant_meta_df.csv', index=False)
 
 ################################################################################
