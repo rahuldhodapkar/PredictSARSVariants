@@ -8,6 +8,7 @@ library(cowplot)
 library(Biostrings)
 library(RColorBrewer)
 library(stringr)
+library(ggrepel)
 
 ################################################################################
 # Create Output Scaffolding
@@ -81,7 +82,7 @@ rand.blosum80.scores <- c()
 rand.pam30.scores <- c()
 for (i in 1:sum(df$in_predict == 'True')) {
   ix <- sample(1:24, 2)
-  rand.blosum100.scores <- c(rand.blosum100.scores, BLOSUM100[ix[1], ix[2]])
+  rand.blosum80.scores <- c(rand.blosum80.scores, BLOSUM80[ix[1], ix[2]])
   rand.pam30.scores <-c(rand.pam30.scores, PAM30[ix[1], ix[2]])
 }
 
@@ -169,4 +170,56 @@ plt.merged <- plot_grid(
   ncol=1, align='v', axis='rl', rel_heights = c(3.4,1))
 ggsave('./fig/merged_substitution_plots.png', width=12, height=7.3)
 
+################################################################################
+# Create Predicted Mutation Burden Plot
+################################################################################
+pred.7df4 <- read.csv('./data/7DF4_StoACE2.tsv', sep='\t', comment.char='#')
+pred.8d8q.2130 <- read.csv('./data/8D8Q_Sto2130.tsv', sep='\t', comment.char='#')
+pred.8d8q.2196 <- read.csv('./data/8D8Q_Sto2196.tsv', sep='\t', comment.char='#')
 
+colnames(pred.7df4) <- paste0(colnames(pred.7df4), '_7df4')
+colnames(pred.8d8q.2130) <- paste0(colnames(pred.8d8q.2130), '_8d8q_2130')
+colnames(pred.8d8q.2196) <- paste0(colnames(pred.8d8q.2196), '_8d8q_2196')
+
+merged.df <- merge(pred.7df4, pred.8d8q.2130, by.x='Mutation_7df4', by.y='Mutation_8d8q_2130')
+merged.df <- merge(merged.df, pred.8d8q.2196, by.x='Mutation_7df4', by.y='Mutation_8d8q_2196')
+
+merged.df$DDG_8d8q_avg <- sapply(
+  1:nrow(merged.df),
+  function(i) {
+     mean(merged.df$DDG_8d8q_2130[[i]], merged.df$DDG_8d8q_2196[[i]])
+  })
+
+merged.df$ID <- sub.venn.df$ID[match(merged.df$Mutation_7df4, rownames(sub.venn.df))]
+merged.df$ID <- factor(merged.df$ID, levels=c('101', '110', '111', '100'), 
+                        ordered=T)
+
+ggplot(merged.df, aes(x=-DDG_7df4, y=-DDG_8d8q_avg, fill=ID)) +
+  scale_fill_manual(values=c('#785ef0', '#648fff', '#fe6100', '#dc267f')) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  geom_point(color='#000000', shape=21, size=3, alpha=0.5) +
+  theme_cowplot() +
+  xlim(values=c(-3,3)) + 
+  ylim(values=c(-1.5,1.5)) +
+  background_grid(minor='xy') +
+  theme(
+    axis.line = element_blank()
+  ) +
+  geom_text_repel(aes(label=Mutation_7df4), max.overlaps = Inf)
+ggsave('./fig/predicted_binding_energies_labeled.png', width=9, height=8.5)
+
+
+ggplot(merged.df, aes(x=-DDG_7df4, y=-DDG_8d8q_avg, fill=ID)) +
+  scale_fill_manual(values=c('#785ef0', '#648fff', '#fe6100', '#dc267f')) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  geom_point(color='#000000', shape=21, size=5, alpha=0.5) +
+  theme_cowplot() +
+  xlim(values=c(-3,3)) + 
+  ylim(values=c(-1.5,1.5)) +
+  background_grid(minor='xy') +
+  theme(
+    axis.line = element_blank()
+  )
+ggsave('./fig/predicted_binding_energies.png', width=9, height=8.5)

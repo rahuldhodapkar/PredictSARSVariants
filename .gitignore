@@ -1,6 +1,7 @@
 *.swp
 *.swo
 .DS_Store
+.Rhistory
 
 data
 model_out
