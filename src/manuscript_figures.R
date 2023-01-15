@@ -21,8 +21,6 @@ s <- ifelse(!dir.exists('./calc'), dir.create('./calc'), FALSE)
 # Load Data
 ################################################################################
 
-
-
 data('BLOSUM80')
 data('BLOSUM100')
 data('PAM30')
@@ -223,3 +221,22 @@ ggplot(merged.df, aes(x=-DDG_7df4, y=-DDG_8d8q_avg, fill=ID)) +
     axis.line = element_blank()
   )
 ggsave('./fig/predicted_binding_energies.png', width=9, height=8.5)
+
+
+ggplot(merged.df, aes(x=-DDG_7df4, y=-DDG_8d8q_avg, fill=ID)) +
+  scale_fill_manual(values=c('#785ef0', '#648fff', '#fe6100', '#dc267f')) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  geom_point(color='#000000', shape=21, size=5, alpha=0.5) +
+  theme_cowplot() +
+  xlim(values=c(-3,3)) + 
+  ylim(values=c(-1.5,1.5)) +
+  background_grid(minor='xy') +
+  theme(
+    axis.line = element_blank()
+  ) +
+  geom_text_repel(aes(label=Mutation_7df4), max.overlaps = Inf, nudge_x = 2, nudge_y = -2,
+                  data=merged.df[merged.df$DDG_7df4 < 0 & merged.df$DDG_8d8q_avg > 0,])
+ggsave('./fig/predicted_binding_energies_keylabel.png', width=9, height=8.5)
+
+
