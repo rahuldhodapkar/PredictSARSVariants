@@ -24,3 +24,7 @@ run:
 
 call_substitutions:
 	python ./src/call_aa_variants.py
+
+visualize:
+	Rscript ./src/manuscript_figures.R
+	Rscript ./src/supplementary_figures.R

@@ -1,11 +1,22 @@
-# Predict SARS-Cov2 Variants
+# Predict SARS-Cov2 Variants with SpikeGPT2
+
+![SpikeGPT2 workflow image](overview.png)
 
 This repository contains an implementation of using pretrained language models
 to predict the evolution of the SARS-CoV2 spike protein as variants develop.
+The SpikeGPT2 model is a fine-tuned version of the ProtGPT2 model recently described by
+*Ferruz et al.* (PMID: [35896542](https://pubmed.ncbi.nlm.nih.gov/35896542/)).
 
-## Models
-The pretrained ProtGPT2 model was used for this purpose - to predict variations
-in the RBD of the SARS-CoV2 spike (S) protein.  
+SpikeGPT2 is fine-tuned on SARS-CoV-2 spike protein sequences, and can be
+used for synthesis of any portion of the S protein.  It has been tested
+in prediction of variants in the receptor-binding motif subdomain of the
+SARS-CoV-2 S protein.
+
+Note that this repository contains code that can be very easily adapted to
+the prediction of other protein sequences of interest.  The `src/run_clm.py` file
+is a modified version of the same script provided by the HuggingFace transformers
+team that is designed to be run only with the ProtGPT2 model as a base.  It
+implements freezing of all but the final GPT2 transformer layer.
 
 ## Data
 SARS-CoV2 spike protein sequences were obtained from the NIH Sars-CoV2 Data Hub
@@ -25,7 +36,7 @@ as compared to chance.
 As the loaded ProtGPT2 model was pretrained on the
 UniRef50 (version 2021_04) dataset, it cannot have contained sequencing
 data that was generated after that date.  Evaluations will be conducted using
-SARS-CoV2 sequences generated on or after May 2021.
+SARS-CoV2 sequences generated after May 2021.
 
 ### MutaBind2
 The MutaBind2 tool was used to evaluate the effect of single-residue amino
@@ -42,36 +53,6 @@ Binding of RBD to therapeutic antibodies:
 Some manual entry of chain identities were required to define
 which particular amino acid chains should be included in the binding
 affinity simulations.
-
-### SAAMBE-3D
-The SAAMBE-3D tool was also set up to evaluate fitness changes after amino
-acid point substitution, **however this implementation is unstable and should
-not be used.** (http://compbio.clemson.edu/saambe_webserver/)
-
-A standalone `python2` implementation was provided by the SAAMBE authors
-and was used for rapid evaluation of the effect of point substitutions
-on binding affinities/free energy.
-
-After copying the appropriate files into the unzipped `standaloneCode`
-folder, the following invocations can be used to call SAAMBE-3D as of Jan 2023.
-For the most up-to-date documentation regarding the tool, please contact
-the original authors.
-
-Several notes on the installation requirements: (1) The SAAMBE tool requires
-a deprecated version of python, which is not being actively maintained.  This
-puts the tool's installation at risk (worth keeping in mind when setting up).
-(2) For my setup using anaconda with `python 2.7.18`, `conda-forge` installation
-of the `xgboost` dependency was required to prevent segmentation fault on
-running the tool.  Further, conda was unable to appropriately set up the
-path search with the correct `CONDA_PREFIX`, so this needed to be done manually.
-
-After these additional setup steps, SAAMBE was able to predict changes to the
-binding affinities of the relevant complexes with the following commands:
-
-    export PATH=$CONDA_PREFIX/bin:$PATH
-    python Mutation_pred.py -i 7df4.pdb -f saambe3d_predicted_substitutions.txt -d 1 >saambe3d_predicted_output.txt
-    python Mutation_pred.py -i 8d8q.pdb -f saambe3d_evushield.txt -d 1 >saambe3d_evushield_output.txt
-
 
 ## Orchestration
 Code to run these experiments is organized using a simple `Makefile`.
@@ -93,3 +74,48 @@ And if you would like to finetune the `ProtGPT2` model, you will need to install
 huggingface Tranformers from source with:
 
     pip install git+https://github.com/huggingface/transformers
+
+## Running the Code
+Some short comments below on running several key steps of the pipeline.
+Please refer to the `Makefile` for more details.
+
+### Base Commands
+The following commands can be easily adapted for use with other pathogen
+polypeptide sequences of interest, as described in the SpikeGPT2 manuscript.
+
+    make clean
+
+Cleans FASTA files and prepares multiline sequences for fine-tuning by
+representing data as multiple lines of text with the required
+`'<|endoftext|>'` tokens added. Random subsampling is implemented here
+as well.
+
+    make finetune
+
+Fine-tunes the model given the provided input files after cleaning using
+`make clean`.
+
+### SARS-CoV-2 S RBM Specific Commands
+The following commands are designed specifically for the task of predicting
+SARS-CoV-2 S RBM fragment single amino-acid substitutions, and will require some
+adaptation to be used with other pathogen sequences, or to predict other
+mutational types.
+
+    make run
+
+Generates synthetic fragments by running the fine-tuned model.
+
+    make call_substitutions
+
+Call substitutions using biopython utilities.
+
+    make visualize
+
+Generate visualizations used in the SpikeGPT2 manuscript.  Note that this
+command uses `R` instead of `python`.  
+
+A PyMOL script is also provided at `./src/pymol_opensource_viz.pml` to generate
+the substitutions and views provided in the SpikeGPT2 manuscript, but the script
+must be run interatively as it requires creation of appropriate directories
+prior to running, and uses the PyMOL mutagenesis wizard, which requires
+selection of residues to mutate and visual assessment of substituted rotamers.
